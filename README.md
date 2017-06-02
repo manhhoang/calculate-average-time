@@ -1,5 +1,17 @@
 # Calculate Average Time
 
+#### Run the service
+
+```
+mvn spring-boot:run
+```
+
+#### Run the service from Docker
+
+```
+docker run -p 8080:8080 -t manhhoang/calculate-average-time
+```
+
 #### Asynchronous API using CompletableFuture
 
 ```
@@ -70,4 +82,14 @@ public class SwaggerConfig {
                 .build();
     }
 }
+```
+
+#### Dockerfile
+
+```
+FROM frolvlad/alpine-oraclejdk8:slim
+VOLUME /tmp
+ADD calculate-average-time-1.0-SNAPSHOT.jar app.jar
+RUN sh -c 'touch /app.jar'
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
 ```
