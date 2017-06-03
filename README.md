@@ -1,6 +1,6 @@
 # Calculate Average Time
 
-#### Run the service
+#### Run the service from local
 
 ```
 mvn spring-boot:run
@@ -9,12 +9,19 @@ mvn spring-boot:run
 #### Run the service from Docker
 
 ```
+docker pull manhhoang/calculate-average-time
 docker run -p 8080:8080 -t manhhoang/calculate-average-time
 ```
 
-#### Asynchronous Rest Api using CompletableFuture
+#### Asynchronous rest api for POST and GET method using CompletableFuture
 
 ```
+@RequestMapping(value = "/v1/task", method = RequestMethod.POST, headers = "Accept=application/json")
+@ResponseBody
+public CompletableFuture<Task> createTask(@RequestBody Task task) {
+    return this.calculationService.create(task);
+}
+
 @RequestMapping(value = "/v1/task/{taskId}", method = RequestMethod.GET, headers = "Accept=application/json")
 @ResponseBody
 public CompletableFuture<Task> getTask(@PathVariable("taskId") String taskId) {
