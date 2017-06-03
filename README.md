@@ -12,7 +12,7 @@ mvn spring-boot:run
 docker run -p 8080:8080 -t manhhoang/calculate-average-time
 ```
 
-#### Asynchronous API using CompletableFuture
+#### Asynchronous Rest Api using CompletableFuture
 
 ```
 @RequestMapping(value = "/v1/task/{taskId}", method = RequestMethod.GET, headers = "Accept=application/json")
@@ -30,13 +30,15 @@ public CompletableFuture<Task> findByTaskId(String taskId) {
 
         Optional<List<Task>> tasks = calculationRepository.findByTaskId(taskId);
         long totalDuration = 0;
+        String foundTaskId = "";
         for(Task task : tasks.get()) {
             totalDuration += task.getDuration();
+            foundTaskId = task.getTaskId();
         }
         int size = tasks.get().size();
-        long averageDuration = size != 0 ? totalDuration / size : 0;
+        long averageDuration = size != 0 ? totalDuration/size : 0;
 
-        return new Task(taskId, averageDuration);
+        return new Task(foundTaskId, averageDuration);
     });
 }
 ```
@@ -48,6 +50,46 @@ public CompletableFuture<Task> findByTaskId(String taskId) {
 public interface CalculationRepository extends CrudRepository<Task, Long> {
 
     Optional<List<Task>> findByTaskId(String taskId);
+}
+```
+
+#### Junit Test
+
+```
+@Test
+public void testFindByTaskIdWithOneTask() throws ExecutionException, InterruptedException {
+    String taskId = "task_1";
+    Optional<List<Task>> tasks = Optional.of(new ArrayList<>());
+    Task task = new Task();
+    task.setTaskId(taskId);
+    task.setDuration(10000);
+    tasks.get().add(task);
+    when(calculationRepository.findByTaskId(taskId)).thenReturn(tasks);
+    CompletableFuture<Task> futureTask = calculationService.findByTaskId(taskId);
+    Task result = futureTask.get();
+    assertEquals(result.getId(), 0);
+    assertEquals(result.getTaskId(), taskId);
+    assertEquals(result.getDuration(), 10000);
+}
+```
+
+#### Integration Test
+
+```
+@Test
+public void testGetTaskByTaskIdWithZeroTask() throws IOException {
+    MultiValueMap<String, String> header = new LinkedMultiValueMap<>();
+    header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
+    HttpEntity<String> entity = new HttpEntity<>(header);
+
+    ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/task/1", String.class, entity);
+    assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    Task task = objectMapper.readValue(response.getBody(), Task.class);
+    assertThat(task.getId(), equalTo(0));
+    assertThat(task.getTaskId(), equalTo(""));
+    assertThat(task.getDuration(), equalTo(0L));
 }
 ```
 

@@ -47,13 +47,15 @@ public class CalculationServiceImpl implements CalculationService {
 
             Optional<List<Task>> tasks = calculationRepository.findByTaskId(taskId);
             long totalDuration = 0;
+            String foundTaskId = "";
             for(Task task : tasks.get()) {
                 totalDuration += task.getDuration();
+                foundTaskId = task.getTaskId();
             }
             int size = tasks.get().size();
-            long averageDuration = size != 0 ? totalDuration / size : 0;
+            long averageDuration = size != 0 ? totalDuration/size : 0;
 
-            return new Task(taskId, averageDuration);
+            return new Task(foundTaskId, averageDuration);
         });
     }
 }
