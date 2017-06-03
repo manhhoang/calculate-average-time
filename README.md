@@ -100,15 +100,22 @@ public void testGetTaskByTaskIdWithZeroTask() throws IOException {
 }
 ```
 
-#### JPA Configuration using H2 database
+#### JPA Configuration using in-memory H2 database
 
 ```
-# Connection url for the H2 database "calculate"
-spring.datasource.url=jdbc:h2:file:~/calculate
+# Connection url for the H2 database "calculation"
+spring.datasource.url=jdbc:h2:file:~/calculation
 
 # Username and password for H2
 spring.datasource.username=sa
 spring.datasource.password=sa
+
+# Keep the connection alive if idle for a long time
+spring.datasource.testWhileIdle=true
+spring.datasource.validationQuery=SELECT 1
+
+# Show or not log for each sql query
+spring.jpa.show-sql=false
 ```
 
 #### Swagger api documents
