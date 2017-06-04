@@ -29,16 +29,17 @@ public class CalculationServiceImpl implements CalculationService {
 
     @Override
     public CompletableFuture<Task> create(Task task) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> calculationRepository.save(task))
+                .thenApply(this::handleCreateResponse);
 
-            Task newTask = calculationRepository.save(task);
-            if(newTask == null) {
-                logger.info("Failed creating task in CalculationService");
-                throw new ApiException(SAVE_ERROR_CODE, SAVE_ERROR_MESSAGE);
-            }
+    }
 
-            return newTask;
-        });
+    private Task handleCreateResponse(Task task) {
+        if(task == null) {
+            logger.info("Failed creating task in CalculationService");
+            throw new ApiException(SAVE_ERROR_CODE, SAVE_ERROR_MESSAGE);
+        }
+        return task;
     }
 
     @Override
