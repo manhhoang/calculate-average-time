@@ -33,20 +33,21 @@ public CompletableFuture<Task> getTask(@PathVariable("taskId") String taskId) {
 
 ```
 public CompletableFuture<Task> findByTaskId(String taskId) {
-    return CompletableFuture.supplyAsync(() -> {
+    return CompletableFuture.supplyAsync(() -> calculationRepository.findByTaskId(taskId))
+            .thenApply(this::calculateAverageDuration);
+}
 
-        Optional<List<Task>> tasks = calculationRepository.findByTaskId(taskId);
-        long totalDuration = 0;
-        String foundTaskId = "";
-        for(Task task : tasks.get()) {
-            totalDuration += task.getDuration();
-            foundTaskId = task.getTaskId();
-        }
-        int size = tasks.get().size();
-        long averageDuration = size != 0 ? totalDuration/size : 0;
+private Task calculateAverageDuration(Optional<List<Task>> tasks) {
+    long totalDuration = 0;
+    String foundTaskId = "";
+    for(Task task : tasks.get()) {
+        totalDuration += task.getDuration();
+        foundTaskId = task.getTaskId();
+    }
+    int size = tasks.get().size();
+    long averageDuration = size != 0 ? totalDuration/size : 0;
 
-        return new Task(foundTaskId, averageDuration);
-    });
+    return new Task(foundTaskId, averageDuration);
 }
 ```
 
